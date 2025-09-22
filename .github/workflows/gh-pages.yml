@@ -22,6 +22,8 @@ jobs:
       - name: Install
         run: npm ci
       - name: Build
+        env:
+          GH_PAGES: '1'
         run: npm run build
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v4
