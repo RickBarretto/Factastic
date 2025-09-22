@@ -3,6 +3,20 @@
 Dynamic Quiz platform powered by Open Trivia DB.
 
 
+## Demo
+
+There are two main commands you may want to use
+in order to run this project:
+
+```
+npm run dev     # Opens on development server
+npm run build   # Builds the static website
+```
+
+Alternatively, there is a live-version running on Github Pages.
+You may check it by clicking in the link on the right aside of this page, right below the description.
+
+
 ## Structure
 
 This Project tries to keep its structure close to a Vertical Slice architecture,
