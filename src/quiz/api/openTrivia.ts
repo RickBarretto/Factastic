@@ -2,7 +2,7 @@ import axios from "axios"
 
 import { QuizApi } from "../rules/quiz"
 import { AnswerOptions, Question, Quiz } from "../models/quiz"
-import { Category, QuizSettings } from "../models/settings"
+import { Category, Difficulty, QuizSettings } from "../models/settings"
 
 export type OpenTriviaDifficulty = 'easy' | 'medium' | 'hard'
 
@@ -63,6 +63,10 @@ function mapCategory(model: Category): OpenTriviaCategory {
     return categoryMap[model] ?? OpenTriviaCategory.General
 }
 
+function mapDifficulty(model: Difficulty): OpenTriviaDifficulty {
+    return model
+}
+
 export type OpenTriviaOptions = {
     amount: number
     category: OpenTriviaCategory
@@ -104,7 +108,7 @@ class OpenTriviaApi implements QuizApi {
         let options: OpenTriviaOptions = {
             amount: settings.questions.count,
             category: mapCategory(settings.category),
-            difficulty: settings.difficulty
+            difficulty: mapDifficulty(settings.difficulty)
         }
         return new this(options)
     }
