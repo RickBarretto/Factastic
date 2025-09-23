@@ -1,5 +1,4 @@
-import { Quiz } from "../api/quiz"
-
+import { Quiz } from "../models/quiz"
 
 export interface IntoQuiz {
     intoQuiz(): Promise<Quiz>
