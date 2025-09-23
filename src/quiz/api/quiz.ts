@@ -1,9 +1,9 @@
 import axios from "axios"
 import { Data } from "dataclass"
 
-type Difficulty = 'easy' | 'medium' | 'hard'
+export type Difficulty = 'easy' | 'medium' | 'hard'
 
-enum Category {
+export enum Category {
     General = 9,
     Books = 10,
     Film = 11,
@@ -30,7 +30,7 @@ enum Category {
     Cartoon = 32,
 }   
 
-type Options = {
+export type Options = {
     amount: number
     category: Category
     difficulty: Difficulty
@@ -89,7 +89,7 @@ class Question extends Data {
 }
 
 
-class Quiz {
+export class Quiz {
     readonly score: number = 0
     readonly questions: Question[] = []
 
