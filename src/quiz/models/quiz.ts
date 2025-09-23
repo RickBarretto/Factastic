@@ -1,12 +1,13 @@
 import { Data } from "dataclass"
 
+import { QuizSettings } from "./settings"
+
 export function shuffle<T>(items: T[]): T[] {
     return items
         .map(value => ({ key: Math.random(), value }))
         .sort((a, b) => a.key - b.key)
         .map(({ value }) => value)
 }
-
 
 export class AnswerOptions {
     readonly options: string[]
@@ -43,6 +44,7 @@ export class Quiz extends Data {
     score: number = 0
     step: number = 1
     questions: Question[] = []
+    settings: QuizSettings
 
     get steps(): number {
         return this.questions.length
