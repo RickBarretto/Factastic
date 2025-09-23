@@ -2,10 +2,11 @@ import axios from "axios"
 
 import { QuizApi } from "../rules/quiz"
 import { AnswerOptions, Question, Quiz } from "../models/quiz"
+import { Category, QuizSettings } from "../models/settings"
 
-export type Difficulty = 'easy' | 'medium' | 'hard'
+export type OpenTriviaDifficulty = 'easy' | 'medium' | 'hard'
 
-export enum Category {
+export enum OpenTriviaCategory {
     General = 9,
     Books = 10,
     Film = 11,
@@ -30,12 +31,42 @@ export enum Category {
     Gadgets = 30,
     JapaneseCulture = 31,
     Cartoon = 32,
-}   
+}
 
-export type Options = {
+function mapCategory(model: Category): OpenTriviaCategory {
+    const categoryMap: Record<number, OpenTriviaCategory> = {
+        [Category.General]: OpenTriviaCategory.General,
+        [Category.Books]: OpenTriviaCategory.Books,
+        [Category.Film]: OpenTriviaCategory.Film,
+        [Category.Music]: OpenTriviaCategory.Music,
+        [Category.Television]: OpenTriviaCategory.Television,
+        [Category.VideoGames]: OpenTriviaCategory.VideoGames,
+        [Category.BoardGames]: OpenTriviaCategory.BoardGames,
+        [Category.ScienceAndNature]: OpenTriviaCategory.ScienceAndNature,
+        [Category.Computers]: OpenTriviaCategory.Computers,
+        [Category.Mathematics]: OpenTriviaCategory.Mathematics,
+        [Category.Mythology]: OpenTriviaCategory.Mythology,
+        [Category.Sports]: OpenTriviaCategory.Sports,
+        [Category.Geography]: OpenTriviaCategory.Geography,
+        [Category.History]: OpenTriviaCategory.History,
+        [Category.Politics]: OpenTriviaCategory.Politics,
+        [Category.Art]: OpenTriviaCategory.Art,
+        [Category.Celebrities]: OpenTriviaCategory.Celebrities,
+        [Category.Animals]: OpenTriviaCategory.Animals,
+        [Category.Vehicles]: OpenTriviaCategory.Vehicles,
+        [Category.Comics]: OpenTriviaCategory.Comics,
+        [Category.Gadgets]: OpenTriviaCategory.Gadgets,
+        [Category.JapaneseCulture]: OpenTriviaCategory.JapaneseCulture,
+        [Category.Cartoon]: OpenTriviaCategory.Cartoon,
+    }
+
+    return categoryMap[model] ?? OpenTriviaCategory.General
+}
+
+export type OpenTriviaOptions = {
     amount: number
-    category: Category
-    difficulty: Difficulty
+    category: OpenTriviaCategory
+    difficulty: OpenTriviaDifficulty
 }
 
 
@@ -67,9 +98,14 @@ const httpOkStatus = 200
 
 class OpenTriviaApi implements QuizApi {
     readonly url: string = "https://opentdb.com/api.php"
-    readonly options: Options
+    readonly options: OpenTriviaOptions
 
-    static from(options: Options): OpenTriviaApi {
+    static from(settings: QuizSettings): OpenTriviaApi {
+        let options: OpenTriviaOptions = {
+            amount: settings.questions.count,
+            category: mapCategory(settings.category),
+            difficulty: settings.difficulty
+        }
         return new this(options)
     }
 
@@ -86,7 +122,7 @@ class OpenTriviaApi implements QuizApi {
     }
 
 
-    private constructor(options: Options) {
+    private constructor(options: OpenTriviaOptions) {
         this.options = options
     }
 
@@ -101,7 +137,7 @@ class OpenTriviaApi implements QuizApi {
         return response.data as OpenTriviaResponse
     }
 
-    private urlFrom(options: Options): string {
+    private urlFrom(options: OpenTriviaOptions): string {
         const params = new URLSearchParams()
         params.set('amount', String(options.amount))
         params.set('category', String(options.category.valueOf()))
