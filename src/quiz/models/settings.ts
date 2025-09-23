@@ -39,8 +39,8 @@ export enum Category {
 export class QuestionCount extends Data {
     count: number = 0
 
-    static from(count: number) {
+    static from(count: number): QuestionCount {
         assert(count > 0, "The amount of questions must be positive.")
-        this.create({ count })
+        return this.create({ count })
     }
 }
