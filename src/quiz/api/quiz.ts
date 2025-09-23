@@ -1,4 +1,5 @@
 import axios from "axios"
+import { Data } from "dataclass"
 
 type Difficulty = 'easy' | 'medium' | 'hard'
 
@@ -37,6 +38,73 @@ type Options = {
 
 
 // -------- API --------
+
+
+export function shuffle<T>(items: T[]): T[] {
+    return items
+        .map(value => ({ key: Math.random(), value }))
+        .sort((a, b) => a.key - b.key)
+        .map(({ value }) => value)
+}
+
+
+class AnswerOptions {
+    readonly options: string[]
+    readonly correctIndex: number
+
+    constructor(correct: string, incorrects: string[]) {
+        const options = shuffle([correct, ...incorrects])
+        this.options = options
+        this.correctIndex = options.indexOf(correct)
+    }
+
+    get correct(): string {
+        return this.options[this.correctIndex]
+    }
+
+    get length(): number {
+        return this.options.length
+    }
+
+}
+
+
+class Question extends Data {
+    question: string = ""
+    options: AnswerOptions = new AnswerOptions("", [])
+
+    static fromResult(result: OpenTriviaResult): Question {
+        return Question.create({
+            question: result.question,
+            options: new AnswerOptions(
+                result.correct_answer, 
+                result.incorrect_answers
+            )
+        })
+    }
+
+    isCorrect(index: number): boolean {
+        return index == this.options.correctIndex
+    }
+}
+
+
+class Quiz {
+    readonly score: number = 0
+    readonly questions: Question[] = []
+
+    private constructor(apiResponse: OpenTriviaResponse) {
+        this.questions = apiResponse
+            .results
+            .map(Question.fromResult)
+    }
+
+    static async from(options: Options): Promise<Quiz> {
+        const response = await triviaFrom(options)
+        return new this(response)
+    }
+}
+
 
 // -------- Internal --------
 
@@ -86,13 +154,12 @@ async function triviaFrom(options: Options): Promise<OpenTriviaResponse> {
 
 // run with `deno run src/quiz/api/quiz.ts`
 
-const resp = await triviaFrom({
-    amount: 10,
-    category: Category.BoardGames,
-    difficulty: 'hard'
-})
-
-console.log(resp.response_code == OpenTriviaCode.Success)
-console.log(resp.results[0])
+console.log(
+    await Quiz.from({
+        amount: 10,
+        category: Category.Computers,
+        difficulty: 'medium'
+    })
+)
 
 
