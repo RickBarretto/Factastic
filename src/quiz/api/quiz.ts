@@ -1,5 +1,6 @@
 import axios from "axios"
 import { Data } from "dataclass"
+import { QuizApi } from "../rules/quiz"
 
 export type Difficulty = 'easy' | 'medium' | 'hard'
 
@@ -94,12 +95,6 @@ export class Quiz extends Data {
     step: number = 1
     questions: Question[] = []
 
-    static async from(options: Options): Promise<Quiz> {
-        const response = await triviaFrom(options)
-        const questions = response.results.map(Question.fromApi)
-        return Quiz.create({questions})
-    }
-
     get steps(): number {
         return this.questions.length
     }
@@ -158,24 +153,45 @@ type OpenTriviaResponse = {
     results: OpenTriviaResult[]
 }
 
-function urlFrom(options: Options) {
-    const params = new URLSearchParams()
-    params.set('amount', String(options.amount))
-    params.set('category', String(options.category.valueOf()))
-    params.set('dificulty', options.difficulty)
-    return `https://opentdb.com/api.php?${params}`
-}
-
-
 const httpOkStatus = 200
 
-async function triviaFrom(options: Options): Promise<OpenTriviaResponse> {
-    const url = urlFrom(options)
-    const response = await axios.get(url)
+class OpenTriviaApi implements QuizApi {
+    readonly url: string = "https://opentdb.com/api.php"
+    readonly options: Options
 
-    if (response.status != httpOkStatus) {
-        throw new Error(`Failed to fetch OpenTDB : ${response.statusText}`)
+    static from(options: Options): OpenTriviaApi {
+        return new this(options)
     }
 
-    return response.data as OpenTriviaResponse
+    async intoQuiz(): Promise<Quiz> {
+        const response = await this.fetch()
+        const questions = response.results.map(Question.fromApi)
+        return Quiz.create({questions})
+    }
+
+
+    private constructor(options: Options) {
+        this.options = options
+    }
+
+    private async fetch(): Promise<OpenTriviaResponse> {
+        const url = this.urlFrom(this.options)
+        const response = await axios.get(url)
+
+        if (response.status != httpOkStatus) {
+            throw new Error(`Failed to fetch OpenTDB : ${response.statusText}`)
+        }
+
+        return response.data as OpenTriviaResponse
+    }
+
+    private urlFrom(options: Options): string {
+        const params = new URLSearchParams()
+        params.set('amount', String(options.amount))
+        params.set('category', String(options.category.valueOf()))
+        params.set('dificulty', options.difficulty)
+        return `${this.url}?${params}`
+    }
+
 }
+
