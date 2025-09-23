@@ -73,7 +73,7 @@ class Question extends Data {
     question: string = ""
     options: AnswerOptions = new AnswerOptions("", [])
 
-    static fromResult(result: OpenTriviaResult): Question {
+    static fromApi(result: OpenTriviaResult): Question {
         return Question.create({
             question: result.question,
             options: new AnswerOptions(
@@ -89,20 +89,48 @@ class Question extends Data {
 }
 
 
-export class Quiz {
-    readonly score: number = 0
-    readonly questions: Question[] = []
-
-    private constructor(apiResponse: OpenTriviaResponse) {
-        this.questions = apiResponse
-            .results
-            .map(Question.fromResult)
-    }
+export class Quiz extends Data {
+    score: number = 0
+    step: number = 1
+    questions: Question[] = []
 
     static async from(options: Options): Promise<Quiz> {
         const response = await triviaFrom(options)
-        return new this(response)
+        const questions = response.results.map(Question.fromApi)
+        return Quiz.create({questions})
     }
+
+    get steps(): number {
+        return this.questions.length
+    }
+
+    get current(): Question {
+        return this.questions[this.step - 1]
+    }
+
+    guess(option: number): Quiz | QuizResult {
+        let step = this.step + 1
+        let score = (this.current.isCorrect(option))?
+            this.score + 1 : this.score
+
+        if (step > this.steps) {
+            return this.toResult()
+        }
+
+        return this.copy({step, score})
+    }
+
+    toResult(): QuizResult {
+        return QuizResult.create({ 
+            score: this.score, 
+            total: this.steps 
+        })
+    }
+}
+
+class QuizResult extends Data {
+    score: number
+    total: number
 }
 
 
@@ -154,12 +182,12 @@ async function triviaFrom(options: Options): Promise<OpenTriviaResponse> {
 
 // run with `deno run src/quiz/api/quiz.ts`
 
-console.log(
-    await Quiz.from({
-        amount: 10,
-        category: Category.Computers,
-        difficulty: 'medium'
-    })
-)
+// console.log(
+//     await Quiz.from({
+//         amount: 10,
+//         category: Category.Computers,
+//         difficulty: 'medium'
+//     })
+// )
 
 
