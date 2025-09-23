@@ -179,15 +179,3 @@ async function triviaFrom(options: Options): Promise<OpenTriviaResponse> {
 
     return response.data as OpenTriviaResponse
 }
-
-// run with `deno run src/quiz/api/quiz.ts`
-
-// console.log(
-//     await Quiz.from({
-//         amount: 10,
-//         category: Category.Computers,
-//         difficulty: 'medium'
-//     })
-// )
-
-
