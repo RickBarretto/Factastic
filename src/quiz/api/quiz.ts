@@ -1,6 +1,7 @@
 import axios from "axios"
-import { Data } from "dataclass"
+
 import { QuizApi } from "../rules/quiz"
+import { AnswerOptions, Question, Quiz } from "../models/quiz"
 
 export type Difficulty = 'easy' | 'medium' | 'hard'
 
@@ -35,97 +36,6 @@ export type Options = {
     amount: number
     category: Category
     difficulty: Difficulty
-}
-
-
-// -------- API --------
-
-
-export function shuffle<T>(items: T[]): T[] {
-    return items
-        .map(value => ({ key: Math.random(), value }))
-        .sort((a, b) => a.key - b.key)
-        .map(({ value }) => value)
-}
-
-
-class AnswerOptions {
-    readonly options: string[]
-    readonly correctIndex: number
-
-    constructor(correct: string, incorrects: string[]) {
-        const options = shuffle([correct, ...incorrects])
-        this.options = options
-        this.correctIndex = options.indexOf(correct)
-    }
-
-    get correct(): string {
-        return this.options[this.correctIndex]
-    }
-
-    get length(): number {
-        return this.options.length
-    }
-
-}
-
-
-class Question extends Data {
-    question: string = ""
-    options: AnswerOptions = new AnswerOptions("", [])
-
-    static fromApi(result: OpenTriviaResult): Question {
-        return Question.create({
-            question: result.question,
-            options: new AnswerOptions(
-                result.correct_answer, 
-                result.incorrect_answers
-            )
-        })
-    }
-
-    isCorrect(index: number): boolean {
-        return index == this.options.correctIndex
-    }
-}
-
-
-export class Quiz extends Data {
-    score: number = 0
-    step: number = 1
-    questions: Question[] = []
-
-    get steps(): number {
-        return this.questions.length
-    }
-
-    get current(): Question {
-        return this.questions[this.step - 1]
-    }
-
-    guess(option: number): Quiz | QuizResult {
-        let step = this.step + 1
-        let score = (this.current.isCorrect(option))?
-            this.score + 1 : this.score
-
-        if (step > this.steps) {
-            return this.toResult()
-        }
-
-        return this.copy({step, score})
-    }
-
-    toResult(): QuizResult {
-        return QuizResult.create({ 
-            score: this.score, 
-            total: this.steps 
-        })
-    }
-}
-
-class QuizResult extends Data {
-    score: number
-    total: number
 }
 
 
@@ -165,7 +75,13 @@ class OpenTriviaApi implements QuizApi {
 
     async intoQuiz(): Promise<Quiz> {
         const response = await this.fetch()
-        const questions = response.results.map(Question.fromApi)
+        const questions = response.results.map((result) => Question.create({
+            question: result.question,
+            options: new AnswerOptions(
+                result.correct_answer, 
+                result.incorrect_answers
+            )
+        }))
         return Quiz.create({questions})
     }
 
