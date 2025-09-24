@@ -1,7 +1,6 @@
 import axios from "axios"
 
 import { QuizApi } from "../rules/quiz"
-import { AnswerOptions as QuizOptions } from "../models/quiz"
 import { Question as QuizQuestion } from "../models/quiz"
 import { Quiz } from "../models/quiz"
 import { Category as QuizCategory, Difficulty as QuizDifficulty, QuizSettings } from "../models/settings"
@@ -117,13 +116,13 @@ export class OpenTriviaApi implements QuizApi {
 
     async intoQuiz(): Promise<Quiz> {
         const response = await this.fetch()
-        const questions = response.results.map((result) => QuizQuestion.create({
-            question: result.question,
-            options: new QuizOptions(
-                result.correct_answer, 
-                result.incorrect_answers
-            )
-        }))
+        const questions = response.results.map((result) => 
+            QuizQuestion.from({
+                question: result.question,
+                answer: result.correct_answer,
+                others: result.incorrect_answers
+            })
+        )
         return Quiz.create({questions})
     }
 
