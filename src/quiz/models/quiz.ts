@@ -2,7 +2,7 @@ import { assert } from "console"
 
 import { Data } from "dataclass"
 
-import { Category, Difficulty, QuizSettings } from "./settings"
+import { Category, Difficulty } from "./settings"
 
 export function shuffle<T>(items: T[]): T[] {
     return items
