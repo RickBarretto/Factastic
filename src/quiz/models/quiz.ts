@@ -46,8 +46,7 @@ export class Question extends Data {
         incorrects: []
     })
 
-    static from(params: { question: string, answer: string, others: string[] }): Question {
-        const {question, answer, others } = params
+    static from({ question, answer, others }: { question: string, answer: string, others: string[] }): Question {
         return Question.create({
             question,
             _options: AnswerOptions.from({
