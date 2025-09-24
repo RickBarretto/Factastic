@@ -15,11 +15,17 @@ export class AnswerOptions extends Data {
     _options: string[] | null = null
     _correctIndex: number | null = null
 
-    static from({correct, incorrects}: {correct: string, incorrects: string[]}): AnswerOptions {
+    static from({
+        correct,
+        incorrects,
+    }: {
+        correct: string
+        incorrects: string[]
+    }): AnswerOptions {
         const options = shuffle([correct, ...incorrects])
         return AnswerOptions.create({
             _options: options,
-            _correctIndex: options.indexOf(correct)
+            _correctIndex: options.indexOf(correct),
         })
     }
 
@@ -35,24 +41,30 @@ export class AnswerOptions extends Data {
     get length(): number {
         return this.options.length
     }
-
 }
-
 
 export class Question extends Data {
     question: string = ""
     _options: AnswerOptions = AnswerOptions.from({
-        correct: '', 
-        incorrects: []
+        correct: "",
+        incorrects: [],
     })
 
-    static from({ question, answer, others }: { question: string, answer: string, others: string[] }): Question {
+    static from({
+        question,
+        answer,
+        others,
+    }: {
+        question: string
+        answer: string
+        others: string[]
+    }): Question {
         return Question.create({
             question,
             _options: AnswerOptions.from({
-                correct: answer, 
-                incorrects: others
-            })
+                correct: answer,
+                incorrects: others,
+            }),
         })
     }
 
@@ -60,7 +72,7 @@ export class Question extends Data {
         return Question.from({
             question,
             answer: "True",
-            others: ["False"]
+            others: ["False"],
         })
     }
 
@@ -68,7 +80,7 @@ export class Question extends Data {
         return Question.from({
             question,
             answer: "False",
-            others: ["True"]
+            others: ["True"],
         })
     }
 
@@ -83,12 +95,11 @@ export class Question extends Data {
     isTrue(): boolean {
         return this.isCorrect("True")
     }
-    
+
     isFalse(): boolean {
         return this.isCorrect("False")
     }
 }
-
 
 export class Quiz extends Data {
     score: number = 0
@@ -97,11 +108,19 @@ export class Quiz extends Data {
     category: Category = Category.General
     questions: Question[] = []
 
-    static from({level, category, questions}: {level: Difficulty, category: Category, questions: Question[]}): Quiz {
+    static from({
+        level,
+        category,
+        questions,
+    }: {
+        level: Difficulty
+        category: Category
+        questions: Question[]
+    }): Quiz {
         return Quiz.create({
             questions,
             level,
-            category
+            category,
         })
     }
 
@@ -115,11 +134,12 @@ export class Quiz extends Data {
 
     guess(option: string): Quiz | QuizResult {
         const step: number = this.step + 1
-        const score: number = (this.current.isCorrect(option))?
-            this.score + 1 : this.score
+        const score: number = this.current.isCorrect(option)
+            ? this.score + 1
+            : this.score
 
-        const updated = this.copy({step, score} as any)        
-        return (step > this.steps)? updated.toResult() : updated
+        const updated = this.copy({ step, score } as any)
+        return step > this.steps ? updated.toResult() : updated
     }
 
     toResult(): QuizResult {
@@ -133,7 +153,7 @@ export class QuizResult extends Data {
     score: number = 0
     total: number = 1
 
-    static is({ score, of }: {score: number, of: number}): QuizResult {
+    static is({ score, of }: { score: number; of: number }): QuizResult {
         const total = of
 
         assert(score >= 0, "Score must be positive")
@@ -155,5 +175,4 @@ export class QuizResult extends Data {
     get ratio(): number {
         return this.score / this.total
     }
-
 }

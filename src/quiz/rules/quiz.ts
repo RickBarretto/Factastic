@@ -16,6 +16,6 @@ export abstract class QuizApi implements IntoQuiz {
 
     // Subclasses should override this static factory method.
     static from(settings: QuizSettings): QuizApi {
-        throw new Error('QuizApi.from() must be implemented by subclasses')
+        throw new Error("QuizApi.from() must be implemented by subclasses")
     }
 }

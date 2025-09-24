@@ -8,7 +8,7 @@ export type QuizSettings = {
     difficulty: Difficulty
 }
 
-export type Difficulty = 'easy' | 'medium' | 'hard'
+export type Difficulty = "easy" | "medium" | "hard"
 
 export enum Category {
     General,

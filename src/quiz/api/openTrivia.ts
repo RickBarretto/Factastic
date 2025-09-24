@@ -3,9 +3,13 @@ import axios from "axios"
 import { QuizApi } from "../rules/quiz"
 import { Question as QuizQuestion } from "../models/quiz"
 import { Quiz } from "../models/quiz"
-import { Category as QuizCategory, Difficulty as QuizDifficulty, QuizSettings } from "../models/settings"
+import {
+    Category as QuizCategory,
+    Difficulty as QuizDifficulty,
+    QuizSettings,
+} from "../models/settings"
 
-export type Difficulty = 'easy' | 'medium' | 'hard'
+export type Difficulty = "easy" | "medium" | "hard"
 
 export enum Category {
     General = 9,
@@ -74,7 +78,6 @@ export type OpenTriviaOptions = {
     difficulty: Difficulty
 }
 
-
 // -------- Internal --------
 
 enum StatuCode {
@@ -83,12 +86,12 @@ enum StatuCode {
     InvalidParameter = 2,
     SessionNotFound = 3,
     ResetSessionRequired = 4,
-    RateLimit = 5
+    RateLimit = 5,
 }
 
 type ApiQuiz = {
-    type: 'multiple' | 'boolean'
-    diffculty: 'easy' | 'medium' | 'hard'
+    type: "multiple" | "boolean"
+    diffculty: "easy" | "medium" | "hard"
     question: string
     correct_answer: string
     incorrect_answers: string[]
@@ -109,23 +112,22 @@ export class OpenTriviaApi implements QuizApi {
         let options: OpenTriviaOptions = {
             amount: settings.questions.count,
             category: mapCategory(settings.category),
-            difficulty: mapDifficulty(settings.difficulty)
+            difficulty: mapDifficulty(settings.difficulty),
         }
         return new this(options)
     }
 
     async intoQuiz(): Promise<Quiz> {
         const response = await this.fetch()
-        const questions = response.results.map((result) => 
+        const questions = response.results.map(result =>
             QuizQuestion.from({
                 question: result.question,
                 answer: result.correct_answer,
-                others: result.incorrect_answers
+                others: result.incorrect_answers,
             })
         )
-        return Quiz.create({questions})
+        return Quiz.create({ questions })
     }
-
 
     private constructor(options: OpenTriviaOptions) {
         this.options = options
@@ -144,11 +146,9 @@ export class OpenTriviaApi implements QuizApi {
 
     private urlFrom(options: OpenTriviaOptions): string {
         const params = new URLSearchParams()
-        params.set('amount', String(options.amount))
-        params.set('category', String(options.category.valueOf()))
-        params.set('dificulty', options.difficulty)
+        params.set("amount", String(options.amount))
+        params.set("category", String(options.category.valueOf()))
+        params.set("dificulty", options.difficulty)
         return `${this.url}?${params}`
     }
-
 }
-
