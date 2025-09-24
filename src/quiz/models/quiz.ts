@@ -34,7 +34,12 @@ export class AnswerOptions {
 
 export class Question extends Data {
     question: string = ""
-    options: AnswerOptions = new AnswerOptions("", [])
+    _options: AnswerOptions | null = null
+
+    get options(): AnswerOptions {
+        assert(this._options != null, "AnswerOptions is mandatory")
+        return this.options
+    }
 
     isCorrect(index: number): boolean {
         return index == this.options.correctIndex
