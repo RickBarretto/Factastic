@@ -57,12 +57,36 @@ export class Question extends Data {
         })
     }
 
+    static true({ question }: { question: string }): Question {
+        return Question.from({
+            question,
+            answer: "True",
+            others: ["False"]
+        })
+    }
+
+    static false({ question }: { question: string }): Question {
+        return Question.from({
+            question,
+            answer: "False",
+            others: ["True"]
+        })
+    }
+
     get options(): string[] {
         return this.options
     }
 
     isCorrect(choice: string): boolean {
         return this._options.correct == choice
+    }
+
+    isTrue(): boolean {
+        return this.isCorrect("True")
+    }
+    
+    isFalse(): boolean {
+        return this.isCorrect("False")
     }
 }
 

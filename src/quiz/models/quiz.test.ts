@@ -154,16 +154,32 @@ describe('Question', () => {
         expect(question.options).toContain('6')
     })
 
-    it('should work with single option (true/false questions)', () => {
-        const booleanQuestion = Question.from({
+    it('should work with single true option', () => {
+        const question = Question.true({
             question: 'Is the sky blue?',
-            answer: "True",
-            others: ["False"]
         })
 
-        expect(booleanQuestion.isCorrect('True')).toBe(true)
-        expect(booleanQuestion.isCorrect('False')).toBe(false)
-        expect(booleanQuestion.options.length).toBe(2)
+        expect(question.isCorrect('True')).toBe(true)
+        expect(question.isCorrect('False')).toBe(false)
+    
+        expect(question.isTrue()).toBe(true)
+        expect(question.isFalse()).toBe(false)
+    
+        expect(question.options.length).toBe(2)
+    })
+  
+    it('should work with single false option questions)', () => {
+        const polemicQuestion = Question.false({
+            question: 'Is Python better than Ruby?',
+        })
+
+        expect(polemicQuestion.isCorrect('False')).toBe(true)
+        expect(polemicQuestion.isCorrect('True')).toBe(false)
+        
+        expect(polemicQuestion.isFalse()).toBe(true)
+        expect(polemicQuestion.isTrue()).toBe(false)
+
+        expect(polemicQuestion.options.length).toBe(2)
     })
 })
 
