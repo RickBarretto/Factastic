@@ -101,39 +101,70 @@ describe('AnswerOptions', () => {
 })
 
 describe('Question', () => {
-  let question: Question
+    let question: Question
 
-  beforeEach(() => {
-    question = Question.create({
-      question: 'What is 2 + 2?',
-      options: new AnswerOptions('4', ['3', '5', '6'])
+    beforeEach(() => {
+        question = Question.from({
+            question: 'What is 2 + 2?',
+            answer: '4',
+            others: ['3', '5', '6']
+        })
     })
-  })
 
-  it('should create a question with correct properties', () => {
-    expect(question.question).toBe('What is 2 + 2?')
-    expect(question.options.correct).toBe('4')
-  })
+    it('should create a question with correct properties', () => {
+        expect(question.question).toBe('What is 2 + 2?')
+        expect(question.isCorrect('4')).toBeTruthy()
+        expect(question.options.length).toBe(4)
+    })
 
-  it('should correctly identify correct answers', () => {
-    const correctIndex = question.options.correctIndex
-    expect(question.isCorrect(correctIndex)).toBe(true)
-  })
+    it('should correctly identify correct answers', () => {
+        expect(question.isCorrect('4')).toBe(true)
+    })
 
-  it('should correctly identify incorrect answers', () => {
-    const correctIndex = question.options.correctIndex
-    for (let i = 0; i < question.options.length; i++) {
-      if (i !== correctIndex) {
-        expect(question.isCorrect(i)).toBe(false)
-      }
-    }
-  })
+    it('should correctly identify incorrect answers', () => {
+        expect(question.isCorrect('3')).toBe(false)
+        expect(question.isCorrect('5')).toBe(false)
+        expect(question.isCorrect('6')).toBe(false)
+    })
 
-  it('should create with default values', () => {
-    const defaultQuestion = Question.create({})
-    expect(defaultQuestion.question).toBe('')
-    expect(defaultQuestion.options.correct).toBe('')
-  })
+    it('should handle case-sensitive comparisons', () => {
+        const caseQuestion = Question.from({
+            question: 'What is the capital of France?',
+            answer: 'Paris',
+            others: ['London', 'Berlin', 'Madrid']
+        })
+    
+        expect(caseQuestion.isCorrect('Paris')).toBe(true)
+        expect(caseQuestion.isCorrect('paris')).toBe(false)
+        expect(caseQuestion.isCorrect('PARIS')).toBe(false)
+    })
+
+    it('should return false for non-existent choices', () => {
+        expect(question.isCorrect('nonexistent')).toBe(false)
+        expect(question.isCorrect('99')).toBe(false)
+        expect(question.isCorrect('')).toBe(false)
+    })
+
+    it('should access options as a string[]', () => {
+        expect(question.options).toBeDefined()
+        expect(question.options.length).toBe(4)
+        expect(question.options).toContain('4')
+        expect(question.options).toContain('3')
+        expect(question.options).toContain('5')
+        expect(question.options).toContain('6')
+    })
+
+    it('should work with single option (true/false questions)', () => {
+        const booleanQuestion = Question.from({
+            question: 'Is the sky blue?',
+            answer: "True",
+            others: ["False"]
+        })
+
+        expect(booleanQuestion.isCorrect('True')).toBe(true)
+        expect(booleanQuestion.isCorrect('False')).toBe(false)
+        expect(booleanQuestion.options.length).toBe(2)
+    })
 })
 
 describe('Quiz', () => {

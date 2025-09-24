@@ -41,15 +41,28 @@ export class AnswerOptions extends Data {
 
 export class Question extends Data {
     question: string = ""
-    _options: AnswerOptions | null = null
+    _options: AnswerOptions = AnswerOptions.from({
+        correct: '', 
+        incorrects: []
+    })
 
-    get options(): AnswerOptions {
-        assert(this._options != null, "AnswerOptions is mandatory")
-        return this._options!
+    static from(params: { question: string, answer: string, others: string[] }): Question {
+        const {question, answer, others } = params
+        return Question.create({
+            question,
+            _options: AnswerOptions.from({
+                correct: answer, 
+                incorrects: others
+            })
+        })
     }
 
-    isCorrect(index: number): boolean {
-        return index == this.options.correctIndex
+    get options(): string[] {
+        return this.options
+    }
+
+    isCorrect(choice: string): boolean {
+        return this._options.correct == choice
     }
 }
 
