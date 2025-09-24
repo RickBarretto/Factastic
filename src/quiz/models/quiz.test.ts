@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { shuffle, AnswerOptions, Question, Quiz, QuizResult } from "./quiz"
-import { QuizSettings, Category, QuestionCount } from "./settings"
+import { Category } from "./settings"
 
 describe("shuffle function", () => {
     it("should return an array with the same length", () => {
