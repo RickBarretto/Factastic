@@ -38,7 +38,7 @@ export class Question extends Data {
 
     get options(): AnswerOptions {
         assert(this._options != null, "AnswerOptions is mandatory")
-        return this.options
+        return this._options!
     }
 
     isCorrect(index: number): boolean {
