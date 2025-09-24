@@ -35,52 +35,69 @@ describe('shuffle function', () => {
 })
 
 describe('AnswerOptions', () => {
-  let answerOptions: AnswerOptions
+    let answerOptions: AnswerOptions
 
-  beforeEach(() => {
-    answerOptions = new AnswerOptions('Correct Answer', ['Wrong 1', 'Wrong 2', 'Wrong 3'])
-  })
+    beforeEach(() => {
+        answerOptions = AnswerOptions.from({
+        correct: 'Correct Answer',
+        incorrects: ['Wrong 1', 'Wrong 2', 'Wrong 3']
+        })
+    })
 
-  it('should create options with correct answer included', () => {
-    expect(answerOptions.options).toContain('Correct Answer')
-    expect(answerOptions.options).toContain('Wrong 1')
-    expect(answerOptions.options).toContain('Wrong 2')
-    expect(answerOptions.options).toContain('Wrong 3')
-  })
+    it('should include all options', () => {
+        expect(answerOptions.options).toContain('Correct Answer')
+        expect(answerOptions.options).toContain('Wrong 1')
+        expect(answerOptions.options).toContain('Wrong 2')
+        expect(answerOptions.options).toContain('Wrong 3')
+    })
 
-  it('should have correct length', () => {
-    expect(answerOptions.length).toBe(4)
-  })
+    it('should have correct length', () => {
+        expect(answerOptions.length).toBe(4)
+    })
 
-  it('should return correct answer', () => {
-    expect(answerOptions.correct).toBe('Correct Answer')
-  })
+    it('should return correct answer', () => {
+        expect(answerOptions.correct).toBe('Correct Answer')
+    })
 
-  it('should have valid correctIndex', () => {
-    expect(answerOptions.correctIndex).toBeGreaterThanOrEqual(0)
-    expect(answerOptions.correctIndex).toBeLessThan(4)
-    expect(answerOptions.options[answerOptions.correctIndex]).toBe('Correct Answer')
-  })
+    it('should handle empty incorrect answers', () => {
+        const options = AnswerOptions.from({
+        correct: 'Only Answer',
+        incorrects: []
+        })
+        expect(options.length).toBe(1)
+        expect(options.correct).toBe('Only Answer')
+        expect(options.options[0]).toBe('Only Answer')
+    })
 
-  it('should handle empty incorrect answers', () => {
-    const options = new AnswerOptions('Only Answer', [])
-    expect(options.length).toBe(1)
-    expect(options.correct).toBe('Only Answer')
-    expect(options.correctIndex).toBe(0)
-  })
+    it('should shuffle options (statistical test)', () => {
+        const positions: number[] = []
+        for (let i = 0; i < 100; i++) {
+            const options = AnswerOptions.from({
+                correct: 'Correct',
+                incorrects: ['A', 'B', 'C']
+            })
+            const correctIndex = options.options.indexOf('Correct')
+            positions.push(correctIndex)
+        }
+        
+        const uniquePositions = new Set(positions)
+        expect(uniquePositions.size).toBeGreaterThan(1)
+    })
 
-  it('should shuffle options (statistical test)', () => {
-    // Run multiple times to check if shuffling occurs
-    const positions: number[] = []
-    for (let i = 0; i < 100; i++) {
-      const options = new AnswerOptions('Correct', ['A', 'B', 'C'])
-      positions.push(options.correctIndex)
-    }
-    
-    // Should have some variation in positions (not always the same)
-    const uniquePositions = new Set(positions)
-    expect(uniquePositions.size).toBeGreaterThan(1)
-  })
+    it('should create with Data class methods', () => {
+        const options1 = AnswerOptions.from({
+            correct: 'Answer',
+            incorrects: ['Wrong1', 'Wrong2']
+        })
+        const options2 = AnswerOptions.from({
+            correct: 'Answer',
+            incorrects: ['Wrong1', 'Wrong2']
+        })
+        
+        // Should have same correct answer and length
+        expect(options1.correct).toBe(options2.correct)
+        expect(options1.length).toBe(options2.length)
+    })
 })
 
 describe('Question', () => {

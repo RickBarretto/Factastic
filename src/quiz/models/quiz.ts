@@ -11,18 +11,25 @@ export function shuffle<T>(items: T[]): T[] {
         .map(({ value }) => value)
 }
 
-export class AnswerOptions {
-    readonly options: string[]
-    readonly correctIndex: number
+export class AnswerOptions extends Data {
+    _options: string[] | null = null
+    _correctIndex: number | null = null
 
-    constructor(correct: string, incorrects: string[]) {
+    static from({correct, incorrects}: {correct: string, incorrects: string[]}): AnswerOptions {
         const options = shuffle([correct, ...incorrects])
-        this.options = options
-        this.correctIndex = options.indexOf(correct)
+        return AnswerOptions.create({
+            _options: options,
+            _correctIndex: options.indexOf(correct)
+        })
+    }
+
+    get options(): string[] {
+        assert(this._options != null, "Options is mandatory")
+        return this._options!
     }
 
     get correct(): string {
-        return this.options[this.correctIndex]
+        return this.options[this._correctIndex!]
     }
 
     get length(): number {
