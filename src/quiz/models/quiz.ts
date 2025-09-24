@@ -73,7 +73,7 @@ export class Question extends Data {
     }
 
     get options(): string[] {
-        return this.options
+        return this._options._options!
     }
 
     isCorrect(choice: string): boolean {
