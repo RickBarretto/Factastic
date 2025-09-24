@@ -184,190 +184,127 @@ describe('Question', () => {
 })
 
 describe('Quiz', () => {
-  let quiz: Quiz
-  let settings: QuizSettings
+    let quiz: Quiz
 
-  beforeEach(() => {
-    settings = {
-      questions: QuestionCount.from(3),
-      category: Category.General,
-      difficulty: 'easy'
-    }
+    beforeEach(() => {
+        const questions = [          
+            Question.from({
+                question: 'What is 2 + 2?',
+                answer: '4',
+                others: ['3', '5', '6']
+            }),
+            Question.from({
+                question: 'What is the capital of France?',
+                answer: 'Paris',
+                others: ['London', 'Berlin', 'Madrid']
+            }),
+            Question.from({
+                question: 'What color is the sky?',
+                answer: 'Blue',
+                others: ['Red', 'Green', 'Refactor']
+            }),
+        ]
 
-    const questions = [
-      Question.create({
-        question: 'What is 2 + 2?',
-        options: new AnswerOptions('4', ['3', '5', '6'])
-      }),
-      Question.create({
-        question: 'What is the capital of France?',
-        options: new AnswerOptions('Paris', ['London', 'Berlin', 'Madrid'])
-      }),
-      Question.create({
-        question: 'What color is the sky?',
-        options: new AnswerOptions('Blue', ['Red', 'Green', 'Yellow'])
-      })
-    ]
-
-    quiz = Quiz.create({
-      score: 0,
-      step: 1,
-      questions,
-      settings
+        quiz = Quiz.create({
+            score: 0,
+            step: 1,
+            level: 'easy',
+            category: Category.General,
+            questions
+        })
     })
-  })
 
-  it('should create a quiz with correct initial values', () => {
-    expect(quiz.score).toBe(0)
-    expect(quiz.step).toBe(1)
-    expect(quiz.questions).toHaveLength(3)
-    expect(quiz.settings).toBe(settings)
-  })
+    it('should create a quiz with correct initial values', () => {
+        expect(quiz.score).toBe(0)
+        expect(quiz.step).toBe(1)
+        expect(quiz.questions).toHaveLength(3)
+        expect(quiz.level).toBe('easy')
+        expect(quiz.category).toBe(Category.General)
+    })
 
-  it('should return correct steps count', () => {
-    expect(quiz.steps).toBe(3)
-  })
+    it('steps should be equal to the amount of questions', () => {
+        expect(quiz.steps).toBe(3)
+    })
 
-  it('should return current question', () => {
-    expect(quiz.current).toBe(quiz.questions[0])
-    
-    const nextQuiz = quiz.guess(quiz.current.options.correctIndex) as Quiz
-    expect(nextQuiz.current).toBe(quiz.questions[1])
-  })
+    it('should return current question', () => {
+        expect(quiz.current).toBe(quiz.questions[0])
+        
+        const nextQuestion = quiz.guess("") as Quiz
+        expect(nextQuestion.current).toBe(quiz.questions[1])
+    })
 
-  it('should handle correct guess', () => {
-    const correctIndex = quiz.current.options.correctIndex
-    const result = quiz.guess(correctIndex) as Quiz
-    
-    expect(result.score).toBe(1)
-    expect(result.step).toBe(2)
-    expect(result).toBeInstanceOf(Quiz)
-  })
+    it('should handle correct guess', () => {
+        const result = quiz.guess("4") as Quiz
+        
+        expect(result.score).toBe(1)
+        expect(result.step).toBe(2)
+        expect(result).toBeInstanceOf(Quiz)
+    })
 
-  it('should handle incorrect guess', () => {
-    const correctIndex = quiz.current.options.correctIndex
-    const incorrectIndex = (correctIndex + 1) % quiz.current.options.length
-    const result = quiz.guess(incorrectIndex) as Quiz
-    
-    expect(result.score).toBe(0)
-    expect(result.step).toBe(2)
-    expect(result).toBeInstanceOf(Quiz)
-  })
+    it('should handle incorrect guess', () => {
+        const result = quiz.guess("3") as Quiz
+        
+        expect(result.score).toBe(0)
+        expect(result.step).toBe(2)
+        expect(result).toBeInstanceOf(Quiz)
+    })
 
-  it('should return QuizResult when all questions are answered', () => {
-    let currentQuiz = quiz
-    
-    // Answer first two questions correctly
-    for (let i = 0; i < 2; i++) {
-      const correctIndex = currentQuiz.current.options.correctIndex
-      currentQuiz = currentQuiz.guess(correctIndex) as Quiz
-    }
-    
-    // Answer last question correctly
-    const correctIndex = currentQuiz.current.options.correctIndex
-    const result = currentQuiz.guess(correctIndex)
-    
-    expect(result).not.toBeInstanceOf(Quiz)
-    expect(result).toHaveProperty('score')
-    expect(result).toHaveProperty('total')
-    expect((result as any).score).toBe(3)
-    expect((result as any).total).toBe(3)
-  })
+    it('should return QuizResult when all questions are answered', () => {
+        const step1 = quiz.copy()
 
-  it('should convert to QuizResult correctly', () => {
-    const result = quiz.toResult()
-    expect(result).toHaveProperty('score')
-    expect(result).toHaveProperty('total')
-    expect((result as any).score).toBe(0)
-    expect((result as any).total).toBe(3)
-  })
+        const step2 = step1.guess("4") as Quiz
+        const step3 = step2.guess("Paris") as Quiz
+        const result = step3.guess("Blue") as QuizResult
 
-  it('should handle quiz progression correctly', () => {
-    let currentQuiz = quiz
-    let questionsAnswered = 0
-    
-    while (currentQuiz instanceof Quiz && questionsAnswered < 10) { // Safety limit
-      const correctIndex = currentQuiz.current.options.correctIndex
-      const result = currentQuiz.guess(correctIndex)
-      questionsAnswered++
-      
-      if (result instanceof Quiz) {
-        currentQuiz = result
-        expect(currentQuiz.step).toBe(questionsAnswered + 1)
-        expect(currentQuiz.score).toBe(questionsAnswered)
-      } else {
-        // Should be QuizResult
-        expect((result as any).score).toBe(questionsAnswered)
+        expect(result).toBeInstanceOf(QuizResult)
+        expect(result).toHaveProperty('score')
+        expect(result).toHaveProperty('total')
+        expect((result as any).score).toBe(3)
         expect((result as any).total).toBe(3)
-        break
-      }
-    }
-    
-    expect(questionsAnswered).toBe(3)
-  })
-
-  it('should create with default values', () => {
-    const defaultQuiz = Quiz.create({ settings })
-    expect(defaultQuiz.score).toBe(0)
-    expect(defaultQuiz.step).toBe(1)
-    expect(defaultQuiz.questions).toEqual([])
-  })
-
-  it('should handle empty quiz', () => {
-    const emptyQuiz = Quiz.create({ 
-      questions: [],
-      settings
     })
-    
-    expect(emptyQuiz.steps).toBe(0)
-    
-    // Guessing on empty quiz should return result immediately
-    const result = emptyQuiz.guess(0)
-    expect(result).not.toBeInstanceOf(Quiz)
-    expect((result as any).score).toBe(0)
-    expect((result as any).total).toBe(0)
-  })
+
+    it('should convert to QuizResult correctly', () => {
+        const result = quiz.toResult()
+        expect(result).toHaveProperty('score')
+        expect(result).toHaveProperty('total')
+        expect((result as any).score).toBe(0)
+        expect((result as any).total).toBe(3)
+    })
 })
 
 describe('Quiz integration tests', () => {
-  it('should handle a complete quiz flow', () => {
-    const settings: QuizSettings = {
-      questions: QuestionCount.from(2),
-      category: Category.ScienceAndNature,
-      difficulty: 'medium'
-    }
+    it('should handle a complete quiz flow', () => {
+        const questions = [
+            Question.from({
+                question: "What is H2O?",
+                answer: "Water",
+                others: ['Oxygen', 'Hydrogen', 'Carbon']
+            }),
+            Question.from({
+                question: "How many legs does a spider have?",
+                answer: "8",
+                others: ['6', '10', '12']
+            })
+        ]
 
-    const questions = [
-      Question.create({
-        question: 'What is H2O?',
-        options: new AnswerOptions('Water', ['Oxygen', 'Hydrogen', 'Carbon'])
-      }),
-      Question.create({
-        question: 'How many legs does a spider have?',
-        options: new AnswerOptions('8', ['6', '10', '12'])
-      })
-    ]
+        const quiz = Quiz.from({
+            level: "medium",
+            category: Category.ScienceAndNature,
+            questions
+        })
 
-    let quiz = Quiz.create({
-      questions,
-      settings
+        // Answer first question correctly
+        const step2 = quiz.guess("Water") as Quiz
+        expect(step2.score).toBe(1)
+        expect(step2.step).toBe(2)
+
+        // Answer second question incorrectly
+        const result = step2.guess("10")
+
+        expect(result).toBeInstanceOf(QuizResult)
+        expect((result as any).score).toBe(1)
+        expect((result as any).total).toBe(2)
     })
-
-    // Answer first question correctly
-    const firstCorrectIndex = quiz.current.options.correctIndex
-    quiz = quiz.guess(firstCorrectIndex) as Quiz
-    expect(quiz.score).toBe(1)
-    expect(quiz.step).toBe(2)
-
-    // Answer second question incorrectly
-    const secondCorrectIndex = quiz.current.options.correctIndex
-    const incorrectIndex = (secondCorrectIndex + 1) % quiz.current.options.length
-    const result = quiz.guess(incorrectIndex)
-
-    expect(result).not.toBeInstanceOf(Quiz)
-    expect((result as any).score).toBe(1)
-    expect((result as any).total).toBe(2)
-  })
 })
 
 

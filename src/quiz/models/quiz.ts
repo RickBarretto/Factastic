@@ -2,7 +2,7 @@ import { assert } from "console"
 
 import { Data } from "dataclass"
 
-import { QuizSettings } from "./settings"
+import { Category, Difficulty, QuizSettings } from "./settings"
 
 export function shuffle<T>(items: T[]): T[] {
     return items
@@ -93,8 +93,17 @@ export class Question extends Data {
 export class Quiz extends Data {
     score: number = 0
     step: number = 1
+    level: Difficulty = "easy"
+    category: Category = Category.General
     questions: Question[] = []
-    settings: QuizSettings
+
+    static from({level, category, questions}: {level: Difficulty, category: Category, questions: Question[]}): Quiz {
+        return Quiz.create({
+            questions,
+            level,
+            category
+        })
+    }
 
     get steps(): number {
         return this.questions.length
@@ -104,23 +113,19 @@ export class Quiz extends Data {
         return this.questions[this.step - 1]
     }
 
-    guess(option: number): Quiz | QuizResult {
-        let step = this.step + 1
-        let score = (this.current.isCorrect(option))?
+    guess(option: string): Quiz | QuizResult {
+        const step: number = this.step + 1
+        const score: number = (this.current.isCorrect(option))?
             this.score + 1 : this.score
 
-        if (step > this.steps) {
-            return this.toResult()
-        }
-
-        return this.copy({step, score})
+        const updated = this.copy({step, score} as any)        
+        return (step > this.steps)? updated.toResult() : updated
     }
 
     toResult(): QuizResult {
-        return QuizResult.create({ 
-            score: this.score, 
-            total: this.steps 
-        })
+        const score = this.score
+        const total = this.steps
+        return QuizResult.is({ score, of: total })
     }
 }
 
