@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { shuffle, AnswerOptions, Question, Quiz } from './quiz'
+import { shuffle, AnswerOptions, Question, Quiz, QuizResult } from './quiz'
 import { QuizSettings, Category, QuestionCount } from './settings'
 
 describe('shuffle function', () => {
@@ -304,4 +304,25 @@ describe('Quiz integration tests', () => {
     expect((result as any).score).toBe(1)
     expect((result as any).total).toBe(2)
   })
+})
+
+
+describe("QuizResult", () => {
+    it('should create with default values', () => {
+        const result = QuizResult.create({})
+        expect(result.score).toBe(0)
+        expect(result.total).toBe(1)
+    })
+
+    it('should create with provided values', () => {
+        const result = QuizResult.is({ score: 5, of: 10 })
+        expect(result.score).toBe(5)
+        expect(result.total).toBe(10)
+    })
+
+    it('should calculate ratio correctly', () => {
+        const result = QuizResult.is({ score: 3, of: 5 })
+        expect(result.ratio).toBeCloseTo(0.6)
+    })
+
 })

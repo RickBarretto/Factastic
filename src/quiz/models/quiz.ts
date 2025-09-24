@@ -1,3 +1,5 @@
+import { assert } from "console"
+
 import { Data } from "dataclass"
 
 import { QuizSettings } from "./settings"
@@ -74,7 +76,31 @@ export class Quiz extends Data {
     }
 }
 
-class QuizResult extends Data {
-    score: number
-    total: number
+export class QuizResult extends Data {
+    score: number = 0
+    total: number = 1
+
+    static is({ score, of }: {score: number, of: number}): QuizResult {
+        const total = of
+
+        assert(score >= 0, "Score must be positive")
+        assert(total >= 0, "Total must be positive")
+        assert(total >= 1, "At least score 1 should be possibe")
+        assert(total >= score, "User should not score more than the max")
+
+        return QuizResult.create({ score, total })
+    }
+
+    get isPrefect(): boolean {
+        return this.score == this.total
+    }
+
+    get isGood(): boolean {
+        return this.ratio >= 0.7
+    }
+
+    get ratio(): number {
+        return this.score / this.total
+    }
+
 }
